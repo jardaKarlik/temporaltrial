@@ -1,5 +1,5 @@
 import { Client } from '@temporalio/client';
-import { teknoReleaseWorkflow, approvalSignal } from './workflows.js';
+import { releaseListWorkflow, approvalSignal } from './workflows.js';
 import { NativeConnection } from '@temporalio/worker';
 import { loadTeknoConfig } from './config.js';
 import * as dotenv from 'dotenv';
@@ -31,15 +31,15 @@ async function run() {
     }
   };
 
-  console.log('Starting Tekno Release Workflow...');
+  console.log('Starting Release List Workflow...');
   console.log(`Release Request: v${releaseRequest.version} by ${releaseRequest.requestedBy}`);
 
   // Start a workflow execution
-  const handle = await client.workflow.start(teknoReleaseWorkflow, {
+  const handle = await client.workflow.start(releaseListWorkflow, {
     // Task queue must match what the worker is listening to
-    taskQueue: 'tekno-release-task-queue',
+    taskQueue: 'release-list-task-queue',
     // Unique identifier for this workflow execution
-    workflowId: `tekno-release-${releaseRequest.version}-${Date.now()}`,
+    workflowId: `release-list-${releaseRequest.version}-${Date.now()}`,
     // Arguments to pass to the workflow
     args: [releaseRequest],
   });

@@ -7,16 +7,17 @@ import {
 } from '@temporalio/workflow';
 import type * as activities from './activities.js';
 
-// Activities must be proxied so Temporal can apply timeouts/retries.
-// Local inline comments explain each use.
+// Activities must be proxied so Temporal can apply timeouts/retries/heartbeats.
 const acts = proxyActivities<typeof activities>({
   startToCloseTimeout: '10 minutes',
+  heartbeatTimeout: '30 seconds',
   retry: { maximumAttempts: 2 },
 });
 
 // Separate short-timeout proxy for post-deploy health checks.
 const healthActs = proxyActivities<typeof activities>({
   startToCloseTimeout: '2 minutes',
+  heartbeatTimeout: '30 seconds',
 });
 
 // External approval signal (mirrors the n8n webhook approval step).
@@ -28,12 +29,12 @@ export const approvalSignal = defineSignal<
       comments?: string;
     },
   ]
->('tekno-release-approval');
+>('release-list-approval');
 
 // Live status query.
-export const releaseStatusQuery = defineQuery<string>('tekno-release-status');
+export const releaseStatusQuery = defineQuery<string>('release-list-status');
 
-export interface TeknoReleaseRequest {
+export interface ReleaseListRequest {
   version: string;
   changelog: string;
   requestedBy: string;
@@ -44,7 +45,7 @@ export interface TeknoReleaseRequest {
   };
 }
 
-export interface TeknoReleaseResult {
+export interface ReleaseListResult {
   status: 'success' | 'failed' | 'cancelled';
   version: string;
   steps: { name: string; status: string; details?: unknown }[];
@@ -52,14 +53,14 @@ export interface TeknoReleaseResult {
 }
 
 /**
- * Tekno App Release Workflow.
+ * Release List Workflow.
  * Deterministic: no Date/setTimeout/Math/random in workflow code.
  * Timestamps come from activity results; approval waits on a signal.
  */
-export const teknoReleaseWorkflow = async (
-  releaseRequest: TeknoReleaseRequest,
-): Promise<TeknoReleaseResult> => {
-  const steps: TeknoReleaseResult['steps'] = [];
+export const releaseListWorkflow = async (
+  releaseRequest: ReleaseListRequest,
+): Promise<ReleaseListResult> => {
+  const steps: ReleaseListResult['steps'] = [];
   setHandler(releaseStatusQuery, () => 'validating');
 
   // Step 1: validate
@@ -110,7 +111,7 @@ export const teknoReleaseWorkflow = async (
       version: releaseRequest.version,
       status: 'failed',
       deploymentId: build.buildId,
-      notifiedBy: 'tekno-release-workflow',
+      notifiedBy: 'release-list-workflow',
     });
     return {
       status: 'failed',
@@ -134,7 +135,7 @@ export const teknoReleaseWorkflow = async (
     version: releaseRequest.version,
     status: 'success',
     deploymentId: staging.deploymentId,
-    notifiedBy: 'tekno-release-workflow:approval-request',
+      notifiedBy: 'release-list-workflow:approval-request',
   });
   let approval: { approved: boolean; approvedBy: string; comments?: string } | undefined;
   setHandler(approvalSignal, (payload: { approved: boolean; approvedBy: string; comments?: string }) => {

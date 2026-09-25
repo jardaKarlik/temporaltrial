@@ -1,5 +1,5 @@
 /**
- * Central environment configuration for the Tekno release worker.
+ * Central environment configuration for the release list worker.
  * Fails fast on missing required vars instead of silently falling back.
  */
 export interface TeknoEnvConfig {

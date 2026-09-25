@@ -22,7 +22,7 @@ async function run() {
   // Create a worker that will process tasks from the task queue
   const worker = await Worker.create({
     connection,
-    taskQueue: 'tekno-release-task-queue',
+    taskQueue: 'release-list-task-queue',
     // Point to the directory containing workflow functions
     workflowsPath: path.resolve(__dirname, '..', 'src'),
     // Explicitly register activities
@@ -50,7 +50,7 @@ async function run() {
 
   // Run the worker
   await worker.run();
-  console.log('Worker started successfully for Tekno Release workflow');
+  console.log('Worker started successfully for Release List workflow');
 }
 
 run().catch((err) => {
