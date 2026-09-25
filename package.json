@@ -9,7 +9,7 @@
     "start": "node dist/worker.js",
     "dev": "tsc --watch & nodemon dist/worker.js",
     "client": "node dist/client.js",
-    "build": "npx --yes typescript@7.0.2 tsc",
+    "build": "node ./node_modules/typescript/bin/tsc",
     "verify": "node dist/client.js"
   },
   "keywords": [],
@@ -19,11 +19,11 @@
   "dependencies": {
     "@temporalio/client": "^1.24.0",
     "@temporalio/worker": "^1.24.0",
-    "dotenv": "^18.0.3"
+    "dotenv": "^18.0.3",
+    "typescript": "^7.0.2"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
-    "nodemon": "^3.1.14",
-    "typescript": "^7.0.2"
+    "nodemon": "^3.1.14"
   }
 }
