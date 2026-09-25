@@ -9,7 +9,7 @@
     "start": "node dist/worker.js",
     "dev": "tsc --watch & nodemon dist/worker.js",
     "client": "node dist/client.js",
-    "build": "tsc",
+    "build": "npx --yes typescript@7.0.2 tsc",
     "verify": "node dist/client.js"
   },
   "keywords": [],
